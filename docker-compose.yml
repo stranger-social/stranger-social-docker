@@ -1,0 +1,167 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: mastodon-redis
+    restart: always
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mastodon
+
+  web:
+    image: ghcr.io/mastodon/mastodon:v4.4.8
+    container_name: mastodon-web
+    restart: always
+    env_file:
+      - .env
+    command: bundle exec puma -t ${PUMA_MIN_THREADS:-5}:${PUMA_MAX_THREADS:-5} -w ${PUMA_WORKERS:-2} --bind tcp://0.0.0.0:3000
+    depends_on:
+      - redis
+      - postgres
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - mastodon-public:/opt/mastodon/public
+    environment:
+      # These override defaults from .env files if needed
+      - RAILS_ENV=production
+      - NODE_ENV=production
+    networks:
+      - mastodon
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  streaming:
+    image: ghcr.io/mastodon/mastodon-streaming:v4.4.8
+    container_name: mastodon-streaming
+    restart: always
+    env_file:
+      - .env
+    command: node ./streaming/index.js
+    depends_on:
+      - redis
+      - postgres
+    ports:
+      - "127.0.0.1:4000:4000"
+    environment:
+      - RAILS_ENV=production
+      - NODE_ENV=production
+      - STREAMING_CLUSTER_NUM=${STREAMING_WORKERS:-1}
+    networks:
+      - mastodon
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://localhost:4000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  sidekiq:
+    image: ghcr.io/mastodon/mastodon:v4.4.8
+    container_name: mastodon-sidekiq-default
+    restart: always
+    env_file:
+      - .env
+    command: bundle exec sidekiq -c 5 -q default -q mailers -q scheduler
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - RAILS_ENV=production
+      - NODE_ENV=production
+    networks:
+      - mastodon
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep -v grep | grep 'sidekiq' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  sidekiq-ingress:
+    image: ghcr.io/mastodon/mastodon:v4.4.8
+    container_name: mastodon-sidekiq-ingress
+    restart: always
+    env_file:
+      - .env
+    command: bundle exec sidekiq -c 35 -q push,4 -q pull,2 -q ingress
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - RAILS_ENV=production
+      - NODE_ENV=production
+    networks:
+      - mastodon
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep -v grep | grep 'sidekiq' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: mastodon-postgres
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ${DB_DATA_DIR:-./postgres/data}:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    networks:
+      - mastodon
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    image: nginx:alpine
+    container_name: mastodon-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+      - mastodon-public:/opt/mastodon/public:ro
+    depends_on:
+      - web
+      - streaming
+    networks:
+      - mastodon
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--header", "Host: ${LOCAL_DOMAIN}", "--no-check-certificate", "-O-", "https://localhost:443/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  mastodon:
+    driver: bridge
+
+volumes:
+  redis-data:
+  mastodon-public:

@@ -1,0 +1,62 @@
+# Environment files with secrets
+.env
+.env.local
+.env.*.local
+
+# PostgreSQL data
+postgres/data/
+/mnt/*/
+
+# Backup files
+*.sql
+*.sql.gz
+*.dump
+*.bak
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+*.tmp
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# SSL certificates (if stored locally)
+ssl/
+certs/
+*.pem
+*.key
+*.crt
+
+# Certbot generated assets (keep structure via .gitkeep only)
+certbot/conf/*
+!certbot/conf/.gitkeep
+certbot/conf/live/*
+!certbot/conf/live/.gitkeep
+certbot/conf/archive/**
+certbot/conf/renewal/**
+certbot/conf/accounts/**
+certbot/conf/csr/**
+certbot/conf/keys/**
+certbot/conf/renewal-hooks/**
+certbot/www/*
+!certbot/www/.gitkeep
+
+# Extracted secrets
+*-secrets.txt
+k8s-*.txt
+extract-*.sh.log
+ 
+# Local/temporary files not for commit
+docker-compose.compare.yml

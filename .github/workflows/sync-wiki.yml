@@ -1,0 +1,57 @@
+name: Sync Wiki
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+  workflow_dispatch:
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout wiki
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: wiki
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync docs to wiki
+        run: |
+          # Remove old wiki content (except .git)
+          find wiki -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          
+          # Copy docs content to wiki
+          cp -r docs/* wiki/
+          
+          # Ensure Home.md exists (GitHub wiki requirement)
+          if [ ! -f wiki/Home.md ]; then
+            echo "Error: docs/Home.md is required for wiki" >&2
+            exit 1
+          fi
+
+      - name: Commit and push wiki changes
+        working-directory: wiki
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git add .
+          
+          if git diff --staged --quiet; then
+            echo "No changes to wiki"
+          else
+            git commit -m "Sync wiki from docs/ - $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+            git push
+          fi

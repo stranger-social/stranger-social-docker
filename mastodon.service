@@ -1,0 +1,32 @@
+[Unit]
+Description=Mastodon Docker Compose Service
+Documentation=https://docs.joinmastodon.org/
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/stranger-social-docker
+ExecStart=/usr/bin/docker-compose up
+ExecStop=/usr/bin/docker-compose down
+ExecReload=/usr/bin/docker-compose up -d
+Restart=always
+RestartSec=10s
+
+# Environment
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=mastodon
+
+# Security
+User=root
+ProtectSystem=strict
+ProtectHome=yes
+NoNewPrivileges=true
+PrivateTmp=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectKernelTunables=yes
+
+[Install]
+WantedBy=multi-user.target
