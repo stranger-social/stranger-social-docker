@@ -1,21 +1,25 @@
 # Mastodon Docker Deployment
 
-Production-ready Docker Compose setup for running Mastodon in production on any cloud provider or on-premises server.
+Production-ready Docker Compose setup for running Mastodon on any cloud provider or on-premises infrastructure.
 
-## Features
+**Version:** 5.0.1 | **Status:** Stable | **Last Updated:** October 23, 2025
 
-- Complete production setup (web, streaming, sidekiq, nginx, postgres, redis)
-- Security-first: SSL/TLS, env-based secrets, `.env.example` provided
-- S3-compatible storage support (AWS S3, Linode Objects, MinIO, etc.)
-- Health checks and logging
-- Comprehensive Wiki documentation (synced from `docs/`)
-- Works on any Linux host or cloud provider
+## Overview
+
+This is a provider-agnostic Docker Compose deployment for Mastodon featuring:
+
+- ✅ Complete production setup (web, streaming, sidekiq, nginx, postgres, redis)
+- ✅ Security-first architecture (SSL/TLS, environment-based secrets, no hardcoded credentials)
+- ✅ S3-compatible storage (AWS S3, Linode Objects, MinIO, etc.)
+- ✅ Health checks and comprehensive logging
+- ✅ Extensive documentation (auto-synced to GitHub Wiki)
+- ✅ Works on any Linux host or cloud provider
 
 ## Quick Start
 
 ```bash
 # Clone repository
-git clone <your-repo-url>
+git clone https://github.com/stranger-social/mastodon-docker
 cd mastodon-docker
 
 # Configure environment
@@ -29,32 +33,64 @@ docker compose up -d
 docker compose ps
 ```
 
-## Documentation
+## 📚 Documentation
 
-Complete documentation lives in the Wiki and is auto-synced from `docs/`.
+Complete documentation lives in `docs/` (auto-synced to [GitHub Wiki](../../wiki)):
 
-- docs/Home.md (synced to Wiki Home)
-- docs/MCP.md (using GitHub MCP with this repo)
+### Getting Started
+- **[Installation Guide](docs/Installation.md)** - Prerequisites and step-by-step setup
+- **[Configuration Reference](docs/Configuration.md)** - Environment variables and ports
+
+### Operations & Maintenance
+- **[Common Operations](docs/Operations.md)** - User management, backups, database maintenance
+- **[Troubleshooting Guide](docs/Troubleshooting.md)** - Common issues and solutions
+- **[Maintenance Schedule](docs/Maintenance.md)** - Daily/weekly/monthly/quarterly tasks
+
+### Advanced Topics
+- **[Server Migration Guide](docs/Kubernetes-Migration.md)** - Migrate from any deployment
+- **[Performance Tuning](docs/Performance.md)** - Optimize for your instance size
+- **[Security Guide](docs/Security.md)** - Best practices and encryption
+
+### Reference
+- **[Architecture Overview](docs/Architecture.md)** - System design and data flow
+- **[Changelog](docs/CHANGELOG.md)** - Version history and updates
+- **[MCP Integration](docs/MCP.md)** - GitHub Model Context Protocol setup
 
 ## Project Structure
 
 ```
 .
-├── docker-compose.yml          # Main service definitions
-├── .env.example                # Environment template (no secrets)
-├── nginx/                      # Nginx reverse proxy config
+├── docker-compose.yml              # Service definitions
+├── .env.example                    # Configuration template
+├── nginx/                          # Reverse proxy configuration
 │   ├── nginx.conf
-│   └── conf.d/
-│       └── default.conf
-├── docs/                       # Documentation (synced to Wiki)
+│   └── conf.d/default.conf
+├── certbot/                        # SSL certificate structure
+│   ├── live/
+│   ├── conf/
+│   └── www/
+├── docs/                           # Documentation (synced to Wiki)
 │   ├── Home.md
+│   ├── Installation.md
+│   ├── Configuration.md
+│   ├── Operations.md
+│   ├── Troubleshooting.md
+│   ├── Maintenance.md
+│   ├── Kubernetes-Migration.md
+│   ├── Performance.md
+│   ├── Security.md
+│   ├── Architecture.md
+│   ├── CHANGELOG.md
 │   └── MCP.md
-└── .github/
-      └── workflows/
-            └── sync-wiki.yml       # Auto-sync docs to Wiki
+├── .github/
+│   ├── copilot-instructions.md
+│   └── workflows/
+│       ├── sync-wiki.yml
+│       └── secret-scan.yml
+└── mastodon.service                # Systemd unit file
 ```
 
-## Key Commands
+## Common Commands
 
 ```bash
 # Start all services
@@ -64,11 +100,11 @@ docker compose up -d
 docker compose logs -f web
 
 # Create admin user
-docker exec mastodon-web bin/tootctl accounts create admin \
-   --email=admin@example.com --confirmed --role=Admin
+docker exec mastodon-web bin/tootctl accounts create username \
+  --email=user@stranger.social --confirmed --role=Admin
 
 # Database backup
-docker exec mastodon-postgres pg_dump -U mastodon mastodon_production > backup.sql
+docker exec mastodon-postgres pg_dump -U mastodon mastodon_production | gzip > backup.sql.gz
 
 # Restart services
 docker compose restart
@@ -77,41 +113,36 @@ docker compose restart
 docker compose down
 ```
 
-## Security Notes
+## Security
 
-- Never commit `.env` files to version control (protected by `.gitignore`)
-- Use strong, unique passwords; rotate secrets periodically
-- Keep SSL certificates and Docker images up to date
-- Enable `AUTHORIZED_FETCH` to reduce scraping
+- 🔒 Never commit `.env` files (protected by `.gitignore`)
+- 🔒 Use strong, unique passwords; rotate secrets periodically
+- 🔒 Keep SSL certificates current and Docker images up-to-date
+- 🔒 Enable `AUTHORIZED_FETCH` to reduce unauthorized scraping
+- 🔒 See [Security Guide](docs/Security.md) for detailed best practices
 
-## Wiki Sync
+## GitHub Wiki Sync
 
-This repo includes a GitHub Action that syncs `docs/` to the GitHub Wiki on pushes to `main` that change files under `docs/**`.
+Documentation in `docs/` is automatically synced to the [GitHub Wiki](../../wiki) via GitHub Actions:
 
-- Ensure the Wiki feature is enabled in repo settings
-- The workflow uses `GITHUB_TOKEN` with `contents: write` permissions
+- Wiki feature must be enabled in repository settings
+- Workflow pushes changes from `docs/**` to Wiki on each push to main
+- Uses `GITHUB_TOKEN` with appropriate permissions
 
-## Support
+## Support & Resources
 
-- Mastodon docs: https://docs.joinmastodon.org/
-- Docker Compose: https://docs.docker.com/compose/
-- GitHub Wiki: View in this repo's Wiki tab
-# Mastodon Docker Setup - stranger.social
+- **Mastodon Documentation:** https://docs.joinmastodon.org/
+- **Docker Compose Docs:** https://docs.docker.com/compose/
+- **GitHub Issues:** [Open an issue](../../issues) for problems
+- **GitHub Wiki:** [Full documentation](../../wiki)
 
-This directory contains a complete Docker Compose setup for migrating the Stranger Social Mastodon instance from Kubernetes to Docker.
+## Version History
 
-## Documentation
+- **5.0.1** (Oct 23, 2025) - Documentation reorganization, migration guides, security updates
+- **5.0.0** (Oct 23, 2025) - Initial Docker Compose implementation
 
-For complete setup, migration, and troubleshooting guides, see the [GitHub Wiki](../../wiki) (synced from `docs/`):
-- **[Home](../../wiki/Home)** — Quick start and deployment guides
-- **[MCP Usage](../../wiki/MCP)** — Using GitHub MCP with this repository
-
-## Support
-
-- Mastodon documentation: https://docs.joinmastodon.org/
-- Docker Compose: https://docs.docker.com/compose/
-- Issues or questions: Open an issue in this repository
+See [CHANGELOG](docs/CHANGELOG.md) for detailed history.
 
 ---
 
-**Note:** This repository is provider-agnostic and supports deployment on any cloud provider or on-premises infrastructure. Customize `.env` and deployment paths for your environment.
+**Note:** This repository is provider-agnostic and works on AWS, DigitalOcean, Linode, Azure, GCP, self-hosted, and any Linux infrastructure. Customize `.env` and deployment configuration for your environment.

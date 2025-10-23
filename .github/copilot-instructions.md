@@ -2,6 +2,14 @@
 
 This file provides context and guidelines for GitHub Copilot when working with this Mastodon Docker deployment repository.
 
+## Project Status
+
+**Current Version:** 5.0.1  
+**Iteration:** 5th generation of stranger-social Mastodon deployment  
+**Last Updated:** October 23, 2025
+
+See `docs/CHANGELOG.md` for version history and changes.
+
 ## Project Overview
 
 This is a **provider-agnostic, production-ready Docker Compose setup** for deploying Mastodon on any cloud provider or on-premises infrastructure. The repository is designed for ease of setup, maintenance, and customization.
@@ -68,10 +76,10 @@ All services use `.env` for configuration; no hardcoded credentials.
 - SMTP: Generic (e.g., `smtp.gmail.com`, or user's mail provider)
 
 ### Nginx Configuration
-- Use `example.com` as placeholder domain, not `stranger.social`
+- Use `stranger.social` as the domain
 - Proxy upstreams: `http://web:3000`, `http://streaming:4000` (use container names)
 - Healthcheck: reference `${LOCAL_DOMAIN}` or `localhost`
-- SSL paths: generic `/etc/letsencrypt/live/example.com/` (certbot will place real certs at runtime)
+- SSL paths: `/etc/letsencrypt/live/stranger.social/` (certbot will place real certs at runtime)
 
 ## Code Style & Patterns
 
@@ -91,7 +99,7 @@ All services use `.env` for configuration; no hardcoded credentials.
 ### Documentation
 - Markdown format in `docs/`
 - Focus on "how to deploy" and "how to operate," not specific provider walkthroughs
-- Examples use `example.com`, `your-domain.com`, or generic provider names
+- Examples use `stranger.social` as the domain
 - Link to external docs (Mastodon, Docker, certbot) rather than duplicating them
 - Include troubleshooting and common issues
 
@@ -114,7 +122,7 @@ All services use `.env` for configuration; no hardcoded credentials.
 
 3. **Example Configs**
    - `.env.example` contains placeholders only
-   - `nginx/conf.d/default.conf` uses `example.com`
+   - `nginx/conf.d/default.conf` uses `stranger.social`
    - `docker-compose.yml` uses generic provider placeholders
 
 4. **Version Pinning**
@@ -179,6 +187,57 @@ This repo is compatible with GitHub MCP for AI-assisted management:
 
 See `docs/MCP.md` for detailed setup.
 
+## Research & Reference Resources
+
+When investigating Mastodon features, configuration, or troubleshooting:
+
+### Official Mastodon Documentation
+- **https://docs.joinmastodon.org/** - Authoritative source for Mastodon architecture, configuration, and administration
+- Use this for understanding environment variables, service architecture, deployment best practices
+
+### Mastodon Repository
+- **https://github.com/mastodon/mastodon/releases** - Release notes, version history, breaking changes, and upgrade guides
+- Check this before updating Mastodon versions to understand compatibility and migration requirements
+- **https://github.com/mastodon/mastodon/issues** - Known issues, open bugs, feature requests, and community discussions
+- Search for issues related to deployment problems, configuration questions, or version-specific behavior
+
+## Versioning & Changelog
+
+This project follows [Semantic Versioning](https://semver.org/):
+
+- **Major version** (5.x.x): Significant architectural changes, major feature additions
+- **Minor version** (x.1.x): New features, improvements, non-breaking changes
+- **Patch version** (x.x.1): Bug fixes, documentation updates, minor fixes
+
+### Current Release
+
+- **Version:** 5.0.1
+- **Released:** October 23, 2025
+- **Focus:** Comprehensive documentation reorganization and guides
+
+### Version History
+
+- **5.0.1** - Documentation reorganization, migration guides, security and performance documentation
+- **5.0.0** - Initial Docker Compose implementation (5th iteration of stranger-social)
+
+See `docs/CHANGELOG.md` for detailed changelog with:
+- Added features and improvements
+- Changed behavior or breaking changes
+- Fixed bugs and issues
+- Deprecated features
+
+### When to Update Changelog
+
+Add entries to `docs/CHANGELOG.md` when:
+- Adding user-facing features
+- Making significant improvements
+- Fixing notable bugs
+- Reorganizing documentation
+- Updating deployment procedures
+- Changing configuration requirements
+
+Use one-liners in the "Added", "Changed", "Fixed" sections. Focus on impact, not implementation details.
+
 ## Questions for Copilot
 
 Good questions to ask Copilot about this repo:
@@ -193,6 +252,8 @@ Good questions to ask Copilot about this repo:
 
 ---
 
-**Last Updated:** October 22, 2025  
+**Last Updated:** October 23, 2025  
+**Current Version:** 5.0.1  
 **Repository:** https://github.com/stranger-social/mastodon-docker  
-**Wiki:** See `docs/` folder (auto-synced to GitHub Wiki)
+**Wiki:** See `docs/` folder (auto-synced to GitHub Wiki)  
+**Changelog:** See `docs/CHANGELOG.md`
