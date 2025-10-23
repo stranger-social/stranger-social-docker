@@ -76,7 +76,7 @@ services:
     restart: always
     env_file:
       - .env
-    command: bundle exec sidekiq -c 5 -q default -q mailers -q scheduler
+    command: bundle exec sidekiq -c 5 -q default -q mailers -q scheduler -q fasp
     depends_on:
       - redis
       - postgres
@@ -97,7 +97,7 @@ services:
     restart: always
     env_file:
       - .env
-    command: bundle exec sidekiq -c 35 -q push,4 -q pull,2 -q ingress
+    command: bundle exec sidekiq -c 150 -q push,4 -q pull,2 -q ingress
     depends_on:
       - redis
       - postgres
@@ -118,6 +118,24 @@ services:
     restart: always
     env_file:
       - .env
+    command: >
+      postgres
+      -c max_connections=300
+      -c shared_buffers=512MB
+      -c effective_cache_size=1536MB
+      -c maintenance_work_mem=128MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=873kB
+      -c huge_pages=off
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+      -c shared_preload_libraries=pg_stat_statements
+      -c pg_stat_statements.track=all
+      -c pg_stat_statements.max=10000
     environment:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
