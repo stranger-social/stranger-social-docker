@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ## [Unreleased]
 
+## [5.0.2] - 2025-10-24
+
+### Changed
+- Increased Sidekiq ingress concurrency from 150 to 300 workers
+- Scaled Sidekiq default queue from 5 to 20 workers
+- Increased Puma web server from 2 to 4 workers with thread pool 5-10
+- Increased streaming cluster from 1 to 2 processes
+- Tuned PostgreSQL performance settings (max_connections=500, shared_buffers=512MB, effective_cache_size=1536MB, work_mem=1032kB)
+- Configured Nginx with dynamic DNS resolution (resolver 127.0.0.11) to prevent stale upstream IPs
+
+### Fixed
+- Nginx 502 errors when web/streaming containers are recreated due to cached upstream IPs
+- Nginx healthcheck failures by implementing dynamic upstream resolution
+
+### Removed
+- Removed deprecated `version` key from docker-compose.yml
+- Removed sidekiq-ingress-extra service (consolidated into single ingress worker)
+
 ## [5.0.1] - 2025-10-23
 
 ### Added
