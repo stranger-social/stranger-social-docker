@@ -4,9 +4,9 @@ This file provides context and guidelines for GitHub Copilot when working with t
 
 ## Project Status
 
-**Current Version:** 5.0.1  
+**Current Version:** 5.0.2  
 **Iteration:** 5th generation of stranger-social Mastodon deployment  
-**Last Updated:** October 23, 2025
+**Last Updated:** October 24, 2025
 
 See `docs/CHANGELOG.md` for version history and changes.
 
@@ -211,12 +211,13 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 ### Current Release
 
-- **Version:** 5.0.1
-- **Released:** October 23, 2025
-- **Focus:** Comprehensive documentation reorganization and guides
+- **Version:** 5.0.2
+- **Released:** October 24, 2025
+- **Focus:** Performance tuning and Nginx reliability improvements
 
 ### Version History
 
+- **5.0.2** - Performance tuning (Sidekiq, Puma, streaming, PostgreSQL), Nginx dynamic DNS resolution
 - **5.0.1** - Documentation reorganization, migration guides, security and performance documentation
 - **5.0.0** - Initial Docker Compose implementation (5th iteration of stranger-social)
 
