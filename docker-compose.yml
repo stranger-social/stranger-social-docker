@@ -241,6 +241,27 @@ services:
       timeout: 5s
       retries: 5
 
+  postgres-backup:
+    image: prodrigestivill/postgres-backup-local
+    container_name: mastodon-postgres-backup
+    restart: always
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - SCHEDULE=@daily           # daily backup at midnight
+      - BACKUP_KEEP_DAYS=2        # keep backups for 2 days
+      - BACKUP_KEEP_FILES=2       # keep only 2 backup files
+      - BACKUP_DIR=/backups
+      - TZ=UTC
+    volumes:
+      - ./pgbackups:/backups   # host directory for backups
+    depends_on:
+      - postgres
+    networks:
+      - mastodon
+
   nginx:
     image: nginx:alpine
     container_name: mastodon-nginx
