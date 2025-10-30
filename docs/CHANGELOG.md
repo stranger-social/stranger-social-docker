@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ## [Unreleased]
 
+## [5.0.3] - 2025-10-30
+
+### Added
+- Integrated automated and manual PostgreSQL backup service using prodrigestivill/postgres-backup-local
+- Created docs/Backup.md with detailed backup and restore instructions
+- Updated docker-compose.yml to include postgres-backup service
+- Added backup retention and restore procedures to documentation
+
+### Changed
+- README and documentation now reference backup service and procedures
+
+### Fixed
+- Project structure and documentation now consistently include backup folder and instructions
+
 ## [5.0.2] - 2025-10-24
 
 ### Changed

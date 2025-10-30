@@ -3,11 +3,17 @@ services:
     image: redis:7-alpine
     container_name: mastodon-redis
     restart: always
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD} --maxmemory 512mb --maxmemory-policy allkeys-lru
     volumes:
       - redis-data:/data
     ports:
       - "127.0.0.1:6379:6379"
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+        reservations:
+          memory: 256M
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
@@ -36,6 +42,12 @@ services:
       - NODE_ENV=production
     networks:
       - mastodon
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O- http://localhost:3000/health || exit 1"]
       interval: 30s
@@ -61,6 +73,12 @@ services:
       - STREAMING_CLUSTER_NUM=${STREAMING_CLUSTER_NUM:-1}
     networks:
       - mastodon
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O- http://localhost:4000/api/v1/streaming/health || exit 1"]
       interval: 30s
@@ -74,7 +92,7 @@ services:
     restart: always
     env_file:
       - .env
-    command: bundle exec sidekiq -c 20 -q default -q mailers -q scheduler -q fasp
+    command: bundle exec sidekiq -c 10 -q default -q mailers -q scheduler -q fasp
     depends_on:
       - redis
       - postgres
@@ -83,6 +101,12 @@ services:
       - NODE_ENV=production
     networks:
       - mastodon
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
     healthcheck:
       test: ["CMD-SHELL", "ps aux | grep -v grep | grep 'sidekiq' || exit 1"]
       interval: 30s
@@ -95,7 +119,7 @@ services:
     restart: always
     env_file:
       - .env
-    command: bundle exec sidekiq -c 300 -q push,4 -q pull,2 -q ingress
+    command: bundle exec sidekiq -c 25 -q ingress
     depends_on:
       - redis
       - postgres
@@ -104,31 +128,91 @@ services:
       - NODE_ENV=production
     networks:
       - mastodon
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
     healthcheck:
       test: ["CMD-SHELL", "ps aux | grep -v grep | grep 'sidekiq' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
 
+  sidekiq-push-pull-1:
+    image: ghcr.io/mastodon/mastodon:v4.4.8
+    container_name: mastodon-sidekiq-push-pull-1
+    restart: always
+    env_file:
+      - .env
+    command: bundle exec sidekiq -c 75 -q push,2 -q pull
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - RAILS_ENV=production
+      - NODE_ENV=production
+    networks:
+      - mastodon
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep -v grep | grep 'sidekiq' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  sidekiq-push-pull-2:
+    image: ghcr.io/mastodon/mastodon:v4.4.8
+    container_name: mastodon-sidekiq-push-pull-2
+    restart: always
+    env_file:
+      - .env
+    command: bundle exec sidekiq -c 75 -q push -q pull,2
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - RAILS_ENV=production
+      - NODE_ENV=production
+    networks:
+      - mastodon
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep -v grep | grep 'sidekiq' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   postgres:
     image: postgres:15-alpine
     container_name: mastodon-postgres
     restart: always
+    shm_size: 256mb
     env_file:
       - .env
     command: >
       postgres
-      -c max_connections=500
-      -c shared_buffers=512MB
-      -c effective_cache_size=1536MB
-      -c maintenance_work_mem=128MB
+      -c max_connections=300
+      -c shared_buffers=256MB
+      -c effective_cache_size=768MB
+      -c maintenance_work_mem=64MB
       -c checkpoint_completion_target=0.9
-      -c wal_buffers=16MB
+      -c wal_buffers=7864kB
       -c default_statistics_target=100
       -c random_page_cost=1.1
       -c effective_io_concurrency=200
-      -c work_mem=1032kB
+      -c work_mem=851kB
       -c huge_pages=off
       -c min_wal_size=1GB
       -c max_wal_size=4GB
@@ -145,11 +229,38 @@ services:
       - "127.0.0.1:5432:5432"
     networks:
       - mastodon
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h localhost -U ${DB_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  postgres-backup:
+    image: prodrigestivill/postgres-backup-local
+    container_name: mastodon-postgres-backup
+    restart: always
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - SCHEDULE=@daily           # daily backup at midnight
+      - BACKUP_KEEP_DAYS=2        # keep backups for 2 days
+      - BACKUP_KEEP_FILES=2       # keep only 2 backup files
+      - BACKUP_DIR=/backups
+      - TZ=UTC
+    volumes:
+      - ./pgbackups:/backups   # host directory for backups
+    depends_on:
+      - postgres
+    networks:
+      - mastodon
 
   nginx:
     image: nginx:alpine

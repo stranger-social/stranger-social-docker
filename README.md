@@ -2,7 +2,7 @@
 
 Production-ready Docker Compose setup for running Mastodon on any cloud provider or on-premises infrastructure.
 
-**Version:** 5.0.1 | **Status:** Stable | **Last Updated:** October 23, 2025
+**Version:** 5.0.2 | **Status:** Stable | **Last Updated:** October 30, 2025
 
 ## Overview
 
@@ -87,6 +87,7 @@ Complete documentation lives in `docs/` (auto-synced to [GitHub Wiki](../../wiki
 │   └── workflows/
 │       ├── sync-wiki.yml
 │       └── secret-scan.yml
+├── pgbackups/                        # Local backup folder (with .gitkeep/.gitignore)
 └── mastodon.service                # Systemd unit file
 ```
 
@@ -104,7 +105,15 @@ docker exec mastodon-web bin/tootctl accounts create username \
   --email=user@stranger.social --confirmed --role=Admin
 
 # Database backup
-docker exec mastodon-postgres pg_dump -U mastodon mastodon_production | gzip > backup.sql.gz
+
+# Local automated backups (recommended)
+docker exec mastodon-postgres-backup /backup.sh
+
+# Manual backup (one-off)
+docker exec mastodon-postgres-backup /backup.sh
+
+# Restore from backup (example)
+zcat pgbackups/last/DB-latest.sql.gz | docker exec -i mastodon-postgres psql -U mastodon -d mastodon_production --clean
 
 # Restart services
 docker compose restart
@@ -137,9 +146,6 @@ Documentation in `docs/` is automatically synced to the [GitHub Wiki](../../wiki
 - **GitHub Wiki:** [Full documentation](../../wiki)
 
 ## Version History
-
-- **5.0.1** (Oct 23, 2025) - Documentation reorganization, migration guides, security updates
-- **5.0.0** (Oct 23, 2025) - Initial Docker Compose implementation
 
 See [CHANGELOG](docs/CHANGELOG.md) for detailed history.
 
