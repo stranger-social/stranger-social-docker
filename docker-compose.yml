@@ -28,7 +28,7 @@ services:
     restart: always
     env_file:
       - .env
-    command: bundle exec puma -t ${PUMA_MIN_THREADS:-5}:${PUMA_MAX_THREADS:-5} -w ${PUMA_WORKERS:-2} --bind tcp://0.0.0.0:3000
+    command: bundle exec puma -t ${PUMA_MIN_THREADS:-5}:${PUMA_MAX_THREADS:-10} -w ${PUMA_WORKERS:-2} --bind tcp://0.0.0.0:3000
     depends_on:
       - redis
       - postgres
@@ -40,6 +40,11 @@ services:
       # These override defaults from .env files if needed
       - RAILS_ENV=production
       - NODE_ENV=production
+      # Database Connection Pool Configuration
+      # Must be >= (PUMA_WORKERS * PUMA_MAX_THREADS) + headroom
+      # With 2 workers × 10 threads = 20 max, using 30 for safety
+      - DB_POOL=30
+      - DB_TIMEOUT=30
     networks:
       - mastodon
     deploy:
