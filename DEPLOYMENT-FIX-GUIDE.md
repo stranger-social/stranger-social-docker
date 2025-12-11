@@ -246,6 +246,6 @@ For performance tuning:
 
 ---
 
-**Deployment Version:** 5.1.0+critical-fixes  
+**Deployment Version:** 5.1.1  
 **Date:** December 11, 2025  
 **Target Instance:** stranger.social

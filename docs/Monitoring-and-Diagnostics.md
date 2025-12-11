@@ -234,7 +234,7 @@ If still seeing errors:
 
 ## Performance Tuning Reference
 
-### Current Settings (v5.1.0):
+### Current Settings (v5.1.1):
 ```yaml
 # Puma Configuration (.env)
 PUMA_WORKERS=2           # 2 processes
@@ -366,6 +366,6 @@ docker exec mastodon-postgres psql -U mastodon -d mastodon_production -c "SELECT
 
 ---
 
-**Version:** 5.1.0  
+**Version:** 5.1.1  
 **Last Updated:** December 11, 2025  
 **Created for stranger.social**
