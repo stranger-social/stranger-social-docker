@@ -23,7 +23,7 @@ services:
       - mastodon
 
   web:
-    image: ghcr.io/mastodon/mastodon:v4.4.8
+    image: ghcr.io/mastodon/mastodon:v4.5.3
     container_name: mastodon-web
     restart: always
     env_file:
@@ -56,7 +56,7 @@ services:
       start_period: 60s
 
   streaming:
-    image: ghcr.io/mastodon/mastodon-streaming:v4.4.8
+    image: ghcr.io/mastodon/mastodon-streaming:v4.5.3
     container_name: mastodon-streaming
     restart: always
     env_file:
@@ -87,7 +87,7 @@ services:
       start_period: 60s
 
   sidekiq:
-    image: ghcr.io/mastodon/mastodon:v4.4.8
+    image: ghcr.io/mastodon/mastodon:v4.5.3
     container_name: mastodon-sidekiq-default
     restart: always
     env_file:
@@ -108,13 +108,13 @@ services:
         reservations:
           memory: 512M
     healthcheck:
-      test: ["CMD-SHELL", "ps aux | grep -v grep | grep 'sidekiq' || exit 1"]
+      test: ["CMD-SHELL", "ps aux | grep '[s]idekiq 8' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
 
   sidekiq-ingress:
-    image: ghcr.io/mastodon/mastodon:v4.4.8
+    image: ghcr.io/mastodon/mastodon:v4.5.3
     container_name: mastodon-sidekiq-ingress
     restart: always
     env_file:
@@ -135,13 +135,13 @@ services:
         reservations:
           memory: 1G
     healthcheck:
-      test: ["CMD-SHELL", "ps aux | grep -v grep | grep 'sidekiq' || exit 1"]
+      test: ["CMD-SHELL", "ps aux | grep '[s]idekiq 8' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
 
   sidekiq-push-pull-1:
-    image: ghcr.io/mastodon/mastodon:v4.4.8
+    image: ghcr.io/mastodon/mastodon:v4.5.3
     container_name: mastodon-sidekiq-push-pull-1
     restart: always
     env_file:
@@ -162,13 +162,13 @@ services:
         reservations:
           memory: 1G
     healthcheck:
-      test: ["CMD-SHELL", "ps aux | grep -v grep | grep 'sidekiq' || exit 1"]
+      test: ["CMD-SHELL", "ps aux | grep '[s]idekiq 8' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
 
   sidekiq-push-pull-2:
-    image: ghcr.io/mastodon/mastodon:v4.4.8
+    image: ghcr.io/mastodon/mastodon:v4.5.3
     container_name: mastodon-sidekiq-push-pull-2
     restart: always
     env_file:
@@ -189,7 +189,7 @@ services:
         reservations:
           memory: 1G
     healthcheck:
-      test: ["CMD-SHELL", "ps aux | grep -v grep | grep 'sidekiq' || exit 1"]
+      test: ["CMD-SHELL", "ps aux | grep '[s]idekiq 8' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5

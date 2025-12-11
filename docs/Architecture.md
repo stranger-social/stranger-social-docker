@@ -57,7 +57,7 @@ System design, services, and data storage for Mastodon Docker deployment.
 ### Web (Mastodon Rails App)
 - **Purpose:** Main Mastodon application (Puma server)
 - **Port:** 3000 (internal only)
-- **Image:** `ghcr.io/mastodon/mastodon:v4.4.8`
+- **Image:** `ghcr.io/mastodon/mastodon:v4.5.3`
 - **Key Tasks:**
   - Handle HTTP requests
   - Serve web UI and API endpoints

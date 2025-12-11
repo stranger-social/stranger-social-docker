@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ## [Unreleased]
 
+## [5.1.0] - 2025-12-11
+
+### Added
+- Clarified Mastodon 4.5.x minimums (PostgreSQL 14+, Redis 7+, Node 20.19+ for asset builds) in deployment notes
+
+### Changed
+- Upgraded Mastodon images (web, streaming, Sidekiq) to v4.5.3 to pick up security and bug fixes
+- Updated Sidekiq health checks to match Sidekiq 8 process names from Mastodon 4.5
+- Refreshed documentation and key generation commands to use the 4.5.3 container tag
+- Bumped deployment version metadata to 5.1.0
+
 ## [5.0.3] - 2025-10-30
 
 ### Added

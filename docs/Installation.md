@@ -5,6 +5,7 @@ Complete Docker Compose setup for running Mastodon in production.
 ## Prerequisites
 
 - Docker & Docker Compose installed
+- Host meets Mastodon 4.5 runtime minimums: PostgreSQL 14+, Redis 7+; Node.js 20.19+ is required only if you build assets yourself (images ship with precompiled assets)
 - Domain name with DNS configured
 - S3-compatible object storage (Linode Objects, AWS S3, etc.)
 - SMTP email service
@@ -24,10 +25,10 @@ cp .env.example .env
 
 ```bash
 # Generate SECRET_KEY_BASE and OTP_SECRET
-docker run --rm -it ghcr.io/mastodon/mastodon:v4.4.8 bundle exec rails secret
+docker run --rm -it ghcr.io/mastodon/mastodon:v4.5.3 bundle exec rails secret
 
 # Generate VAPID keys for web push
-docker run --rm -it ghcr.io/mastodon/mastodon:v4.4.8 bundle exec rails mastodon:webpush:generate_vapid_key
+docker run --rm -it ghcr.io/mastodon/mastodon:v4.5.3 bundle exec rails mastodon:webpush:generate_vapid_key
 ```
 
 ### 3. Configure Environment
@@ -80,4 +81,4 @@ docker compose ps
 
 ---
 
-**Last Updated:** October 23, 2025
+**Last Updated:** December 11, 2025

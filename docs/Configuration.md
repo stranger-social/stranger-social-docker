@@ -59,7 +59,7 @@ Environment variables, ports, and service configuration for Mastodon Docker depl
 
 Generate keys with:
 ```bash
-docker run --rm -it ghcr.io/mastodon/mastodon:v4.4.8 bundle exec rails db:encryption:init
+docker run --rm -it ghcr.io/mastodon/mastodon:v4.5.3 bundle exec rails db:encryption:init
 ```
 
 | Variable | Description |
@@ -109,21 +109,21 @@ Uses `stranger.social` as the domain.
 ### SECRET_KEY_BASE and OTP_SECRET
 
 ```bash
-docker run --rm -it ghcr.io/mastodon/mastodon:v4.4.8 \
+docker run --rm -it ghcr.io/mastodon/mastodon:v4.5.3 \
   bundle exec rails secret
 ```
 
 ### VAPID Keys (Web Push)
 
 ```bash
-docker run --rm -it ghcr.io/mastodon/mastodon:v4.4.8 \
+docker run --rm -it ghcr.io/mastodon/mastodon:v4.5.3 \
   bundle exec rails mastodon:webpush:generate_vapid_key
 ```
 
 ### Active Record Encryption Keys
 
 ```bash
-docker run --rm -it ghcr.io/mastodon/mastodon:v4.4.8 \
+docker run --rm -it ghcr.io/mastodon/mastodon:v4.5.3 \
   bundle exec rails db:encryption:init
 ```
 

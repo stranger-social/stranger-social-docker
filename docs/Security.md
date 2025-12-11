@@ -26,7 +26,7 @@ Never commit:
 Generate strong, unique secrets:
 
 ```bash
-docker run --rm -it ghcr.io/mastodon/mastodon:v4.4.8 \
+docker run --rm -it ghcr.io/mastodon/mastodon:v4.5.3 \
   bundle exec rails secret
 ```
 
@@ -35,7 +35,7 @@ Store in `.env` only, never in code
 #### VAPID Keys (Web Push Notifications)
 
 ```bash
-docker run --rm -it ghcr.io/mastodon/mastodon:v4.4.8 \
+docker run --rm -it ghcr.io/mastodon/mastodon:v4.5.3 \
   bundle exec rails mastodon:webpush:generate_vapid_key
 ```
 
@@ -44,7 +44,7 @@ These are per-instance and shouldn't be shared
 #### Active Record Encryption Keys
 
 ```bash
-docker run --rm -it ghcr.io/mastodon/mastodon:v4.4.8 \
+docker run --rm -it ghcr.io/mastodon/mastodon:v4.5.3 \
   bundle exec rails db:encryption:init
 ```
 
@@ -71,7 +71,7 @@ openssl rand -base64 32
 grep -E "SECRET_KEY_BASE|OTP_SECRET" .env > secrets-backup.txt
 
 # Generate new secrets
-docker run --rm -it ghcr.io/mastodon/mastodon:v4.4.8 \
+docker run --rm -it ghcr.io/mastodon/mastodon:v4.5.3 \
   bundle exec rails secret
 
 # Update .env with new values
