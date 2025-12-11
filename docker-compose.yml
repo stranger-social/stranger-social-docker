@@ -203,16 +203,16 @@ services:
       - .env
     command: >
       postgres
-      -c max_connections=300
-      -c shared_buffers=256MB
-      -c effective_cache_size=768MB
-      -c maintenance_work_mem=64MB
+      -c max_connections=225
+      -c shared_buffers=1GB
+      -c effective_cache_size=3GB
+      -c maintenance_work_mem=256MB
       -c checkpoint_completion_target=0.9
-      -c wal_buffers=7864kB
+      -c wal_buffers=16MB
       -c default_statistics_target=100
       -c random_page_cost=1.1
       -c effective_io_concurrency=200
-      -c work_mem=851kB
+      -c work_mem=4500kB
       -c huge_pages=off
       -c min_wal_size=1GB
       -c max_wal_size=4GB
@@ -236,7 +236,7 @@ services:
         reservations:
           memory: 2G
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h localhost -U ${DB_USER}"]
+      test: ["CMD-SHELL", "pg_isready -h localhost -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -250,17 +250,26 @@ services:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - SCHEDULE=@daily           # daily backup at midnight
-      - BACKUP_KEEP_DAYS=2        # keep backups for 2 days
-      - BACKUP_KEEP_FILES=2       # keep only 2 backup files
+      - SCHEDULE=0 3 * * *        # daily at 03:00 AM (20:00 MST)
+      - BACKUP_KEEP_DAYS=3        # keep backups for 3 days
+      - BACKUP_KEEP_FILES=3       # keep only 3 backup files
       - BACKUP_DIR=/backups
       - TZ=UTC
+      - TMPDIR=/backups/tmp        # keep temp files off the DB disk
+      - POSTGRES_EXTRA_OPTS=--format=custom --lock-wait-timeout=30s --no-owner --no-privileges --no-sync
     volumes:
       - ./pgbackups:/backups   # host directory for backups
     depends_on:
       - postgres
     networks:
       - mastodon
+
+    mem_limit: 256m
+    cpus: "0.25"
+    cpu_shares: 64
+
+    blkio_config:
+      weight: 100
 
   nginx:
     image: nginx:alpine

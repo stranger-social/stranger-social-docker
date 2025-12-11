@@ -106,9 +106,6 @@ docker exec mastodon-web bin/tootctl accounts create username \
 
 # Database backup
 
-# Local automated backups (recommended)
-docker exec mastodon-postgres-backup /backup.sh
-
 # Manual backup (one-off)
 docker exec mastodon-postgres-backup /backup.sh
 

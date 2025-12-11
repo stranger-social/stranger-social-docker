@@ -1,4 +1,6 @@
 # Maintenance Schedule
+#
+**Backup instructions updated for 5.0.3. See docs/Backup.md for details.**
 
 Regular maintenance tasks for Mastodon Docker deployment.
 
@@ -61,13 +63,12 @@ docker logs --since 7d mastodon-postgres 2>&1 | grep -i error | head -20
 ### Test Backup
 
 ```bash
-# Verify backup creation works
-docker exec mastodon-postgres pg_dump -U mastodon mastodon_production | \
-  gzip > test-backup-$(date +%Y%m%d).sql.gz
+# Verify backup creation works (recommended method)
+docker exec mastodon-postgres-backup /backup.sh
 
-# Check backup size and integrity
-ls -lh test-backup-*.sql.gz
-gunzip -t test-backup-*.sql.gz && echo "Backup OK"
+# Check backup files in pgbackups/last/
+ls -lh pgbackups/last/
+gunzip -t pgbackups/last/DB-latest.sql.gz && echo "Backup OK"
 ```
 
 ## Monthly Maintenance
@@ -75,11 +76,11 @@ gunzip -t test-backup-*.sql.gz && echo "Backup OK"
 ### Full Database Backup
 
 ```bash
-docker exec mastodon-postgres pg_dump -U mastodon mastodon_production | \
-  gzip > backup-$(date +%Y%m%d).sql.gz
+# Manual backup (one-off)
+docker exec mastodon-postgres-backup /backup.sh
 
-# Store in multiple locations
-cp backup-*.sql.gz /backup/location1/
+# Copy backup file to another location for offsite storage
+cp pgbackups/last/DB-latest.sql.gz /backup/location1/
 ```
 
 ### Update Docker Images
@@ -92,14 +93,28 @@ docker image prune -a --filter "until=720h"
 ### Review SSL Certificate Expiration
 
 ```bash
+# Check certificate expiration
 openssl x509 -in nginx/ssl/fullchain.pem -text -noout | grep -A2 "Validity"
 ```
 
 If less than 30 days:
 ```bash
+# Renew certificates and reload nginx
 certbot renew --quiet
 docker compose restart nginx
 ```
+
+#### Certbot Renewal Instructions
+
+1. Certbot will automatically renew certificates if scheduled via cron or systemd timer.
+2. To manually renew and reload nginx:
+  ```bash
+  certbot renew --quiet
+  docker compose restart nginx
+  ```
+3. Check renewal logs at `/var/log/letsencrypt/` for errors.
+4. Ensure the `certbot` container or host has access to the ACME challenge directory (`certbot/www`).
+5. For troubleshooting, see [Certbot documentation](https://certbot.eff.org/docs/).
 
 ### Clean Up Old Media
 
@@ -177,14 +192,14 @@ docker exec mastodon-postgres psql -U mastodon -d mastodon_production \
 
 ```bash
 # Perform backup to test location
-docker exec mastodon-postgres pg_dump -U mastodon mastodon_production | \
-  gzip > recovery-test-$(date +%Y%m%d).sql.gz
+docker exec mastodon-postgres-backup /backup.sh
+cp pgbackups/last/DB-latest.sql.gz /backup/recovery-test-$(date +%Y%m%d).sql.gz
 
 # Verify backup integrity
-gunzip -t recovery-test-*.sql.gz
+gunzip -t /backup/recovery-test-*.sql.gz
 
 # Document recovery time needed
-time gunzip < recovery-test-*.sql.gz | wc -l
+time gunzip < /backup/recovery-test-*.sql.gz | wc -l
 ```
 
 ## Seasonal Tasks (6-12 months)
@@ -211,8 +226,8 @@ If self-hosted, apply OS security updates and patches
 Consider implementing cron jobs for regular tasks:
 
 ```bash
-# Daily backup at 2 AM
-0 2 * * * docker exec mastodon-postgres pg_dump -U mastodon mastodon_production | gzip > /backups/backup-$(date +\%Y\%m\%d).sql.gz
+# Daily backup at 2 AM (recommended method)
+0 2 * * * docker exec mastodon-postgres-backup /backup.sh
 
 # Weekly cleanup at 3 AM Sunday
 0 3 * * 0 docker exec mastodon-web bin/tootctl media remove --days=30
