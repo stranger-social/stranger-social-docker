@@ -4,9 +4,9 @@ This file provides context and guidelines for GitHub Copilot when working with t
 
 ## Project Status
 
-**Current Version:** 5.0.2  
+**Current Version:** 5.1.0  
 **Iteration:** 5th generation of stranger-social Mastodon deployment  
-**Last Updated:** October 24, 2025
+**Last Updated:** December 11, 2025
 
 See `docs/CHANGELOG.md` for version history and changes.
 
@@ -88,7 +88,7 @@ All services use `.env` for configuration; no hardcoded credentials.
 - Remove `.env.production` references (merge into `.env`)
 - Health checks on all services
 - Use Alpine/slim images where possible (smaller footprint)
-- Pin image versions (e.g., `ghcr.io/mastodon/mastodon:v4.4.8`, not `latest`)
+- Pin image versions (e.g., `ghcr.io/mastodon/mastodon:v4.5.3`, not `latest`)
 
 ### Scripts
 - Bash scripts: POSIX-compatible, well-commented
@@ -211,12 +211,13 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 ### Current Release
 
-- **Version:** 5.0.2
-- **Released:** October 24, 2025
-- **Focus:** Performance tuning and Nginx reliability improvements
+- **Version:** 5.1.0
+- **Released:** December 11, 2025
+- **Focus:** Mastodon 4.5.3 upgrade (security fixes, Sidekiq 8 health checks, updated dependency minimums)
 
 ### Version History
 
+- **5.1.0** - Upgraded to Mastodon 4.5.3, refreshed Sidekiq 8 health checks, documented new runtime minimums
 - **5.0.2** - Performance tuning (Sidekiq, Puma, streaming, PostgreSQL), Nginx dynamic DNS resolution
 - **5.0.1** - Documentation reorganization, migration guides, security and performance documentation
 - **5.0.0** - Initial Docker Compose implementation (5th iteration of stranger-social)
@@ -253,8 +254,8 @@ Good questions to ask Copilot about this repo:
 
 ---
 
-**Last Updated:** October 23, 2025  
-**Current Version:** 5.0.1  
+**Last Updated:** December 11, 2025  
+**Current Version:** 5.1.0  
 **Repository:** https://github.com/stranger-social/mastodon-docker  
 **Wiki:** See `docs/` folder (auto-synced to GitHub Wiki)  
 **Changelog:** See `docs/CHANGELOG.md`
