@@ -8,10 +8,15 @@ Welcome to the Mastodon Docker documentation. For complete details, see the indi
 - **[Installation Guide](Installation.md)** — Prerequisites, setup steps, security key generation
 - **[Configuration Reference](Configuration.md)** — Environment variables, ports, Docker volumes
 
+
 ### Daily Operations
-- **[Operations Guide](Operations.md)** — User management, backups, database maintenance, logging
+- **[Operations Guide](Operations.md)** — User management, database maintenance, logging
+- **[Backup Guide](Backup.md)** — Automated/manual backups, restore, retention
 - **[Maintenance Schedule](Maintenance.md)** — Daily/weekly/monthly/quarterly tasks with examples
 - **[Troubleshooting Guide](Troubleshooting.md)** — Common issues and solutions
+
+### Security & Certificates
+- **[Certbot & SSL Guide](Certbot.md)** — How to obtain, renew, and automate SSL certificates
 
 
 ### Advanced Topics
@@ -37,8 +42,8 @@ Welcome to the Mastodon Docker documentation. For complete details, see the indi
 
 ## Project Overview
 
-- **Version:** 5.0.1 (Stable)
-- **Released:** October 23, 2025
+- **Version:** 5.0.3 (Stable)
+- **Released:** October 30, 2025
 - **Services:** Web (Puma), Streaming (Node.js), Sidekiq, PostgreSQL 15, Redis 7, Nginx
 - **Storage:** S3-compatible (AWS, Linode Objects, MinIO) + Docker volumes
 - **Provider-agnostic:** Works on AWS, DigitalOcean, Linode, Azure, GCP, self-hosted

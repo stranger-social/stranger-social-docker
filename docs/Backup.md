@@ -24,8 +24,8 @@ The backup service is defined in `docker-compose.yml` as:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - SCHEDULE=@daily           # daily backup at midnight
-      - BACKUP_KEEP_DAYS=2        # keep backups for 2 days
-      - BACKUP_KEEP_FILES=2       # keep only 2 backup files
+      - BACKUP_KEEP_DAYS=3        # keep backups for 3 days
+      - BACKUP_KEEP_FILES=3       # keep only 3 backup files
       - BACKUP_DIR=/backups
       - TZ=UTC
     volumes:
