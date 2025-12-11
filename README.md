@@ -2,7 +2,7 @@
 
 Production-ready Docker Compose setup for running Mastodon on any cloud provider or on-premises infrastructure.
 
-**Version:** 5.1.0 | **Status:** Stable | **Last Updated:** December 11, 2025
+**Version:** 5.1.1 | **Status:** Stable | **Last Updated:** December 11, 2025
 
 ## Overview
 

@@ -4,7 +4,7 @@ This file provides context and guidelines for GitHub Copilot when working with t
 
 ## Project Status
 
-**Current Version:** 5.1.0  
+**Current Version:** 5.1.1  
 **Iteration:** 5th generation of stranger-social Mastodon deployment  
 **Last Updated:** December 11, 2025
 
@@ -211,12 +211,13 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 ### Current Release
 
-- **Version:** 5.1.0
+- **Version:** 5.1.1
 - **Released:** December 11, 2025
-- **Focus:** Mastodon 4.5.3 upgrade (security fixes, Sidekiq 8 health checks, updated dependency minimums)
+- **Focus:** Critical bug fixes - database connection pool exhaustion, nginx optimization, rate limiting
 
 ### Version History
 
+- **5.1.1** - Fixed critical database connection pool exhaustion, optimized nginx workers, added rate limiting
 - **5.1.0** - Upgraded to Mastodon 4.5.3, refreshed Sidekiq 8 health checks, documented new runtime minimums
 - **5.0.2** - Performance tuning (Sidekiq, Puma, streaming, PostgreSQL), Nginx dynamic DNS resolution
 - **5.0.1** - Documentation reorganization, migration guides, security and performance documentation

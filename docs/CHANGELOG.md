@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ## [Unreleased]
 
+## [5.1.1] - 2025-12-11
+
+### Fixed
+- **Critical:** Database connection pool exhaustion causing nginx timeouts and service unavailability
+  - Increased `DB_POOL` from default (5) to 30 connections in docker-compose.yml
+  - Mismatch between Puma threads (20 max) and DB connections (5) was causing request queuing
+  - Adjusted proxy timeouts from 60s to 30s for faster failure detection
+  - Added comprehensive monitoring and diagnostics guide (docs/Monitoring-and-Diagnostics.md)
+- Added rate limiting to nginx to prevent abuse: 30 req/sec per IP
+- Optimized nginx worker connection limits from 768 to 2048 per worker
+- Added keepalive_requests limit to prevent connection reuse exhaustion
+- Implemented per-IP connection limiting (max 50 concurrent per IP)
+- Reduced nginx client timeouts for faster stalled connection cleanup
+- Fixed HTTP/2 directive deprecation warning in nginx configuration
+
+### Added
+- New deployment guide: DEPLOYMENT-FIX-GUIDE.md with step-by-step instructions
+- New monitoring guide: docs/Monitoring-and-Diagnostics.md with comprehensive health checks
+
 ## [5.1.0] - 2025-12-11
 
 ### Added
