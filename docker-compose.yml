@@ -42,8 +42,8 @@ services:
       - NODE_ENV=production
       # Database Connection Pool Configuration
       # Must be >= (PUMA_WORKERS * PUMA_MAX_THREADS) + headroom
-      # With 2 workers × 10 threads = 20 max, using 30 for safety
-      - DB_POOL=30
+      # With 2 workers × 10 threads = 20 max, using 60 for high concurrency
+      - DB_POOL=60
       - DB_TIMEOUT=30
     networks:
       - mastodon
@@ -104,6 +104,7 @@ services:
     environment:
       - RAILS_ENV=production
       - NODE_ENV=production
+      - DB_POOL=15
     networks:
       - mastodon
     deploy:
@@ -131,6 +132,7 @@ services:
     environment:
       - RAILS_ENV=production
       - NODE_ENV=production
+      - DB_POOL=30
     networks:
       - mastodon
     deploy:
@@ -158,6 +160,7 @@ services:
     environment:
       - RAILS_ENV=production
       - NODE_ENV=production
+      - DB_POOL=80
     networks:
       - mastodon
     deploy:
@@ -185,6 +188,7 @@ services:
     environment:
       - RAILS_ENV=production
       - NODE_ENV=production
+      - DB_POOL=80
     networks:
       - mastodon
     deploy:
@@ -229,7 +233,7 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
-      - /mnt/stranger_social_20251021_2300/data:/var/lib/postgresql/data
+      - /var/lib/postgresql/data:/var/lib/postgresql/data
     ports:
       - "127.0.0.1:5432:5432"
     networks:
@@ -297,9 +301,9 @@ services:
     healthcheck:
       test: ["CMD", "wget", "-q", "--header", "Host: ${LOCAL_DOMAIN}", "--no-check-certificate", "-O-", "https://localhost:443/health"]
       interval: 30s
-      timeout: 10s
+      timeout: 30s
       retries: 3
-
+      start_period: 60s
 networks:
   mastodon:
     driver: bridge
