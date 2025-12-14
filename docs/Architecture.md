@@ -117,9 +117,11 @@ System design, services, and data storage for Mastodon Docker deployment.
 
 | Volume | Service | Purpose | Persistence |
 |--------|---------|---------|-------------|
-| `postgres-data` | postgres | Database files | Permanent |
+| `/var/lib/postgresql/data` | postgres | Database files (local disk) | Permanent |
 | `redis-data` | redis | Cache database | Temporary (can rebuild) |
 | `mastodon-public` | web | Precompiled assets | Permanent |
+
+**Note:** The postgres service uses a bind mount to local disk (`/var/lib/postgresql/data`) for better performance and easier backup management, rather than a Docker-managed volume.
 
 ### External Storage
 
