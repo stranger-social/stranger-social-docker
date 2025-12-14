@@ -267,7 +267,7 @@ services:
       - TMPDIR=/backups/tmp        # keep temp files off the DB disk
       - POSTGRES_EXTRA_OPTS=--format=custom --lock-wait-timeout=30s --no-owner --no-privileges --no-sync
     volumes:
-      - ./pgbackups:/backups   # host directory for backups
+      - /mnt/stranger_social_backups/data:/backups   # host directory for backups
     depends_on:
       - postgres
     networks:
