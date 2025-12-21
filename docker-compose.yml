@@ -3,7 +3,7 @@ services:
     image: redis:7-alpine
     container_name: mastodon-redis
     restart: always
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD} --maxmemory 512mb --maxmemory-policy allkeys-lru
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD} --maxmemory 1024mb --maxmemory-policy allkeys-lru
     volumes:
       - redis-data:/data
     ports:
@@ -11,9 +11,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 768M
+          memory: 1G
         reservations:
-          memory: 256M
+          memory: 512M
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
@@ -28,7 +28,7 @@ services:
     restart: always
     env_file:
       - .env
-    command: bundle exec puma -t ${PUMA_MIN_THREADS:-5}:${PUMA_MAX_THREADS:-10} -w ${PUMA_WORKERS:-2} --bind tcp://0.0.0.0:3000
+    command: bundle exec puma -t ${PUMA_MIN_THREADS:-5}:${PUMA_MAX_THREADS:-10} -w ${PUMA_WORKERS:-4} --bind tcp://0.0.0.0:3000
     depends_on:
       - redis
       - postgres
@@ -42,8 +42,8 @@ services:
       - NODE_ENV=production
       # Database Connection Pool Configuration
       # Must be >= (PUMA_WORKERS * PUMA_MAX_THREADS) + headroom
-      # With 2 workers × 10 threads = 20 max, using 60 for high concurrency
-      - DB_POOL=60
+      # With 4 workers × 10 threads = 40 max, using 100 for high-traffic stability
+      - DB_POOL=100
       - DB_TIMEOUT=30
     networks:
       - mastodon
@@ -138,9 +138,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
-        reservations:
           memory: 1G
+        reservations:
+          memory: 512M
     healthcheck:
       test: ["CMD-SHELL", "ps aux | grep '[s]idekiq 8' || exit 1"]
       interval: 30s
@@ -153,22 +153,22 @@ services:
     restart: always
     env_file:
       - .env
-    command: bundle exec sidekiq -c 75 -q push,2 -q pull
+    command: bundle exec sidekiq -c 25 -q push,2 -q pull
     depends_on:
       - redis
       - postgres
     environment:
       - RAILS_ENV=production
       - NODE_ENV=production
-      - DB_POOL=80
+      - DB_POOL=30
     networks:
       - mastodon
     deploy:
       resources:
         limits:
-          memory: 2G
-        reservations:
           memory: 1G
+        reservations:
+          memory: 512M
     healthcheck:
       test: ["CMD-SHELL", "ps aux | grep '[s]idekiq 8' || exit 1"]
       interval: 30s
@@ -181,22 +181,22 @@ services:
     restart: always
     env_file:
       - .env
-    command: bundle exec sidekiq -c 75 -q push -q pull,2
+    command: bundle exec sidekiq -c 25 -q push -q pull,2
     depends_on:
       - redis
       - postgres
     environment:
       - RAILS_ENV=production
       - NODE_ENV=production
-      - DB_POOL=80
+      - DB_POOL=30
     networks:
       - mastodon
     deploy:
       resources:
         limits:
-          memory: 2G
-        reservations:
           memory: 1G
+        reservations:
+          memory: 512M
     healthcheck:
       test: ["CMD-SHELL", "ps aux | grep '[s]idekiq 8' || exit 1"]
       interval: 30s
@@ -207,24 +207,27 @@ services:
     image: postgres:15-alpine
     container_name: mastodon-postgres
     restart: always
-    shm_size: 256mb
+    shm_size: 512mb
     env_file:
       - .env
     command: >
       postgres
       -c max_connections=225
-      -c shared_buffers=1GB
-      -c effective_cache_size=3GB
-      -c maintenance_work_mem=256MB
+      -c shared_buffers=3GB
+      -c effective_cache_size=16GB
+      -c maintenance_work_mem=1GB
       -c checkpoint_completion_target=0.9
-      -c wal_buffers=16MB
+      -c wal_buffers=32MB
       -c default_statistics_target=100
       -c random_page_cost=1.1
       -c effective_io_concurrency=200
-      -c work_mem=4500kB
+      -c work_mem=20MB
       -c huge_pages=off
-      -c min_wal_size=1GB
-      -c max_wal_size=4GB
+      -c min_wal_size=2GB
+      -c max_wal_size=8GB
+      -c max_wal_senders=0
+      -c max_replication_slots=0
+      -c synchronous_commit=off
       -c shared_preload_libraries=pg_stat_statements
       -c pg_stat_statements.track=all
       -c pg_stat_statements.max=10000
@@ -241,9 +244,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 4G
+          memory: 7G
         reservations:
-          memory: 2G
+          memory: 4G
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h localhost -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
@@ -253,6 +256,7 @@ services:
   postgres-backup:
     image: prodrigestivill/postgres-backup-local
     container_name: mastodon-postgres-backup
+    entrypoint: ["ionice", "-c", "3", "nice", "-n", "19", "/init.sh"]
     restart: always
     environment:
       - POSTGRES_HOST=postgres
@@ -260,8 +264,8 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - SCHEDULE=0 3 * * *        # daily at 03:00 AM (20:00 MST)
-      - BACKUP_KEEP_DAYS=3        # keep backups for 3 days
-      - BACKUP_KEEP_FILES=3       # keep only 3 backup files
+      - BACKUP_KEEP_DAYS=2        # keep backups for 2 days
+      - BACKUP_KEEP_FILES=2       # keep only 2 backup files
       - BACKUP_DIR=/backups
       - TZ=UTC
       - TMPDIR=/backups/tmp        # keep temp files off the DB disk
@@ -273,12 +277,12 @@ services:
     networks:
       - mastodon
 
-    mem_limit: 256m
-    cpus: "0.25"
-    cpu_shares: 64
+    mem_limit: 512m
+    cpus: "1.0"
+    cpu_shares: 256
 
     blkio_config:
-      weight: 100
+      weight: 50  # Lower I/O priority (default 100) ensures live queries take precedence over backup disk I/O
 
   nginx:
     image: nginx:alpine

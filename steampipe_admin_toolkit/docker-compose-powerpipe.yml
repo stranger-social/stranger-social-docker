@@ -1,0 +1,91 @@
+version: "3.8"
+
+services:
+  powerpipe:
+    image: ghcr.io/turbot/powerpipe:latest
+    container_name: mastodon-powerpipe-dashboards
+    # Start Powerpipe dashboard server for Mastodon reader
+    # Entrypoint script installs plugins then starts dashboard
+    entrypoint: ["/entrypoint.sh"]
+    working_dir: /workspace
+    ports:
+      - "9033:9033"  # Powerpipe dashboard
+    extra_hosts:
+      - "us-docker.pkg.dev:172.217.78.82"
+    environment:
+      # Mastodon Database Connection
+      MASTODON_DB_HOST: ${MASTODON_DB_HOST:-postgres}
+      MASTODON_DB_PORT: ${MASTODON_DB_PORT:-5432}
+      MASTODON_DB_NAME: ${MASTODON_DB_NAME:-mastodon_production}
+      MASTODON_DB_USER: ${MASTODON_DB_USER:-mastodon}
+      MASTODON_DB_PASSWORD: ${MASTODON_DB_PASSWORD}
+      MASTODON_DB_SSLMODE: ${MASTODON_DB_SSLMODE:-disable}
+      
+      # Instance Configuration
+      MASTODON_LOCAL_DOMAIN: ${MASTODON_LOCAL_DOMAIN:-example.com}
+      MASTODON_ADMIN_API_TOKEN: ${MASTODON_ADMIN_API_TOKEN}
+      
+      # Safety Configuration
+      ADMIN_TOOLKIT_SAFE_MODE: ${ADMIN_TOOLKIT_SAFE_MODE:-true}
+      ADMIN_TOOLKIT_REDACT_REMOTE_IPS: ${ADMIN_TOOLKIT_REDACT_REMOTE_IPS:-true}
+      
+      # Plugin Configuration
+      POWERPIPE_LOG_LEVEL: ${POWERPIPE_LOG_LEVEL:-info}
+      POWERPIPE_UPDATE_CHECK: ${POWERPIPE_UPDATE_CHECK:-false}
+    
+    volumes:
+      # Mastodon insights mod directory
+      - ./mastodon-insights:/workspace
+      - ./workspace/mastodon.spc:/home/powerpipe/.powerpipe/config/mastodon.spc
+      - ./entrypoint-powerpipe.sh:/entrypoint.sh:ro
+      
+      # Persistent plugin cache and data
+      - powerpipe_plugins:/home/powerpipe/.powerpipe/plugins
+      - powerpipe_db:/home/powerpipe/.powerpipe/db
+      - powerpipe_cache:/home/powerpipe/.powerpipe/cache
+    
+    # Healthcheck to verify service is up
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9033/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Resource limits (adjust based on your infrastructure)
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+        reservations:
+          cpus: "1"
+          memory: 1G
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - mastodon-admin-toolkit
+      - mastodon-shared
+
+volumes:
+  powerpipe_plugins:
+    driver: local
+  powerpipe_db:
+    driver: local
+  powerpipe_cache:
+    driver: local
+
+networks:
+  mastodon-admin-toolkit:
+    name: mastodon-admin-toolkit
+  mastodon-shared:
+    external: true
+    name: stranger-social-docker_mastodon

@@ -60,3 +60,4 @@ extract-*.sh.log
  
 # Local/temporary files not for commit
 docker-compose.compare.yml
+steampipe_admin_toolkit/workspace/mods/mastodon_insights/

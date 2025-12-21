@@ -1,0 +1,81 @@
+services:
+  steampipe:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: steampipe-custom:latest
+    container_name: mastodon-steampipe-admin
+    # Start Powerpipe server backed by Steampipe service
+    entrypoint: ["/entrypoint.sh"]
+    working_dir: /workspace
+    ports:
+      - "8080:8080"  # Powerpipe UI
+      - "9193:9193"  # Steampipe API
+    extra_hosts:
+      - "us-docker.pkg.dev:172.217.78.82"
+    environment:
+      # Mastodon Database Connection (for queries that may use DB)
+      MASTODON_DB_HOST: ${MASTODON_DB_HOST:-postgres}
+      MASTODON_DB_PORT: ${MASTODON_DB_PORT:-5432}
+      MASTODON_DB_NAME: ${MASTODON_DB_NAME:-mastodon_production}
+      MASTODON_DB_USER: ${MASTODON_DB_USER:-mastodon}
+      MASTODON_DB_PASSWORD: ${MASTODON_DB_PASSWORD}
+      MASTODON_DB_SSLMODE: ${MASTODON_DB_SSLMODE:-disable}
+
+      # Instance Configuration (for Mastodon plugin)
+      MASTODON_LOCAL_DOMAIN: ${MASTODON_LOCAL_DOMAIN:-example.com}
+      MASTODON_SERVER: ${MASTODON_SERVER:-https://stranger.social}
+      MASTODON_ACCESS_TOKEN: ${MASTODON_ADMIN_API_TOKEN}
+
+      # Safety Configuration
+      ADMIN_TOOLKIT_SAFE_MODE: ${ADMIN_TOOLKIT_SAFE_MODE:-true}
+      ADMIN_TOOLKIT_REDACT_REMOTE_IPS: ${ADMIN_TOOLKIT_REDACT_REMOTE_IPS:-true}
+
+      # Steampipe/Powerpipe Configuration
+      STEAMPIPE_LOG_LEVEL: ${STEAMPIPE_LOG_LEVEL:-info}
+      STEAMPIPE_UPDATE_CHECK: ${STEAMPIPE_UPDATE_CHECK:-false}
+    volumes:
+      - ./workspace:/workspace
+      - ./entrypoint.sh:/entrypoint.sh:ro
+      - steampipe_plugins:/home/steampipe/.steampipe/plugins
+      - steampipe_db:/home/steampipe/.steampipe/db
+      - steampipe_cache:/home/steampipe/.steampipe/cache
+    # Healthcheck to verify service is up (avoid curl dependency)
+    healthcheck:
+      test: ["CMD", "steampipe", "service", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+        reservations:
+          cpus: "1"
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - mastodon-admin-toolkit
+      - mastodon-shared
+
+volumes:
+  steampipe_plugins:
+    driver: local
+  steampipe_db:
+    driver: local
+  steampipe_cache:
+    driver: local
+
+networks:
+  mastodon-admin-toolkit:
+    name: mastodon-admin-toolkit
+  mastodon-shared:
+    external: true
+    name: stranger-social-docker_mastodon
