@@ -3,7 +3,7 @@ services:
     image: redis:7-alpine
     container_name: mastodon-redis
     restart: always
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD} --maxmemory 1536mb --maxmemory-policy allkeys-lru
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD} --maxmemory 1024mb --maxmemory-policy allkeys-lru
     volumes:
       - redis-data:/data
     ports:
@@ -11,7 +11,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
+          memory: 1G
         reservations:
           memory: 512M
     healthcheck:
@@ -138,9 +138,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
-        reservations:
           memory: 1G
+        reservations:
+          memory: 512M
     healthcheck:
       test: ["CMD-SHELL", "ps aux | grep '[s]idekiq 8' || exit 1"]
       interval: 30s
@@ -166,9 +166,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
-        reservations:
           memory: 1G
+        reservations:
+          memory: 512M
     healthcheck:
       test: ["CMD-SHELL", "ps aux | grep '[s]idekiq 8' || exit 1"]
       interval: 30s
@@ -194,9 +194,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
-        reservations:
           memory: 1G
+        reservations:
+          memory: 512M
     healthcheck:
       test: ["CMD-SHELL", "ps aux | grep '[s]idekiq 8' || exit 1"]
       interval: 30s
@@ -207,21 +207,21 @@ services:
     image: postgres:15-alpine
     container_name: mastodon-postgres
     restart: always
-    shm_size: 256mb
+    shm_size: 512mb
     env_file:
       - .env
     command: >
       postgres
       -c max_connections=225
-      -c shared_buffers=2GB
-      -c effective_cache_size=12GB
-      -c maintenance_work_mem=512MB
+      -c shared_buffers=3GB
+      -c effective_cache_size=16GB
+      -c maintenance_work_mem=1GB
       -c checkpoint_completion_target=0.9
-      -c wal_buffers=16MB
+      -c wal_buffers=32MB
       -c default_statistics_target=100
       -c random_page_cost=1.1
       -c effective_io_concurrency=200
-      -c work_mem=16MB
+      -c work_mem=20MB
       -c huge_pages=off
       -c min_wal_size=2GB
       -c max_wal_size=8GB
@@ -244,9 +244,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 4G
+          memory: 7G
         reservations:
-          memory: 2G
+          memory: 4G
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h localhost -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
