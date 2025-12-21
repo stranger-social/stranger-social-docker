@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) 
 
 ## [Unreleased]
 
+## [5.1.2] - 2025-12-14
+
+### Changed
+- Migrated PostgreSQL data from network mount to local SSD at `/var/lib/postgresql/data` for improved performance and reliability
+- Increased database connection pools across all services:
+  - Web: 30 → 60 connections (DB_POOL=60)
+  - Sidekiq default: added DB_POOL=15
+  - Sidekiq ingress: added DB_POOL=30
+  - Sidekiq push-pull workers: added DB_POOL=80 each
+- Total connection pool capacity: 265 connections (vs max_connections=225)
+- Updated documentation to reflect current database configuration and connection pool sizing
+
+### Fixed
+- Eliminated connection pool timeout errors under high load
+
+### Added
+- Documentation for checking duplicate indexes in Performance guide
+- Database connection monitoring to daily maintenance checklist
+- Duplicate index check to monthly maintenance tasks
+- Notes on bind mount vs Docker volume for postgres storage
+
 ## [5.1.1] - 2025-12-11
 
 ### Fixed

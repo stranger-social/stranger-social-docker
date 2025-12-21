@@ -189,9 +189,20 @@ DB_SLAVE_REPLICA_1=postgres-replica  # For read scaling
 DB_POOL=10
 PUMA_WORKERS=2  # Usually: workers * (threads - 1) + threads
 
-# For large instances
-DB_POOL=30
-PUMA_WORKERS=6  # 6 * (15 - 1) + 15 = 99 connections
+# For medium-large instances (production example)
+DB_POOL=60  # Web service
+PUMA_WORKERS=2
+PUMA_MAX_THREADS=10
+
+# Sidekiq workers need separate pools:
+# - sidekiq-default: DB_POOL=15
+# - sidekiq-ingress: DB_POOL=30
+# - sidekiq-push-pull (each): DB_POOL=80
+
+# Total connection capacity must fit within postgres max_connections
+# Example: 60 + 15 + 30 + 80 + 80 = 265 connections
+# Set postgres max_connections >= total pool capacity
+# Current: max_connections=225 (monitor for exhaustion)
 ```
 
 ### Indexes
@@ -209,6 +220,30 @@ Key indexes to verify:
 - `statuses_account_id_id_index`
 - `local_index_statuses` (for local timeline)
 - `public_index_statuses` (for public timeline)
+
+### Check for Duplicate Indexes
+
+Duplicate indexes waste space and slow down writes:
+
+```bash
+# Find duplicate indexes (same columns, same table)
+docker exec mastodon-postgres psql -U mastodon -d mastodon_production \
+  -c "SELECT tablename, indexdef, COUNT(*) 
+      FROM pg_indexes 
+      WHERE schemaname = 'public' 
+      GROUP BY tablename, indexdef 
+      HAVING COUNT(*) > 1;"
+```
+
+To remove a duplicate index:
+
+```bash
+# Use CONCURRENTLY to avoid blocking writes
+docker exec mastodon-postgres psql -U mastodon -d mastodon_production \
+  -c "DROP INDEX CONCURRENTLY index_name;"
+```
+
+**Note:** In December 2024, removed duplicate `index_statuses_on_conversation_id` (kept `index_statuses_conversation_id`).
 
 ### Vacuum and Analyze
 

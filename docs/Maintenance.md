@@ -31,6 +31,22 @@ Monitor for:
 - Jobs taking too long to process
 - Worker availability
 
+### Monitor Database Connections
+
+```bash
+# Check current connection count
+docker exec mastodon-postgres psql -U mastodon -d mastodon_production \
+  -c "SELECT count(*) as connections, max_conn, 
+      round(100.0 * count(*) / max_conn, 2) as pct_used 
+      FROM pg_stat_activity, 
+      (SELECT setting::int AS max_conn FROM pg_settings WHERE name='max_connections') mc;"
+```
+
+Watch for:
+- Connection count approaching `max_connections` (225)
+- Sustained usage > 80% indicates need to increase `max_connections` or reduce `DB_POOL` settings
+- Connection pool timeout errors in logs
+
 ## Weekly Maintenance
 
 ### Review Disk Usage
@@ -150,7 +166,17 @@ docker exec mastodon-postgres psql -U mastodon -d mastodon_production \
 docker exec mastodon-postgres psql -U mastodon -d mastodon_production \
   -c "SELECT schemaname, tablename, indexname, idx_scan 
       FROM pg_stat_user_indexes ORDER BY idx_scan DESC LIMIT 10;"
+
+# Check for duplicate indexes
+docker exec mastodon-postgres psql -U mastodon -d mastodon_production \
+  -c "SELECT tablename, indexdef, COUNT(*) 
+      FROM pg_indexes 
+      WHERE schemaname = 'public' 
+      GROUP BY tablename, indexdef 
+      HAVING COUNT(*) > 1;"
 ```
+
+**If duplicate indexes found:** Remove them with `DROP INDEX CONCURRENTLY` to avoid blocking writes. See [Performance Guide](Performance.md#check-for-duplicate-indexes).
 
 ## Quarterly Maintenance
 

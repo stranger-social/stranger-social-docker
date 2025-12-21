@@ -22,8 +22,17 @@ Environment variables, ports, and service configuration for Mastodon Docker depl
 | `DB_PORT` | PostgreSQL port | `5432` |
 | `DB_USER` | PostgreSQL username | `mastodon` |
 | `DB_PASSWORD` | PostgreSQL password | *(required)* |
-| `DB_NAME` | Database name | `mastodon_production` |
+| `DB_NAME` | Database name | `mastodon_production` || `DB_POOL` | Connection pool size per service | See Performance section |
+| `DB_TIMEOUT` | Connection timeout in seconds | `30` |
 
+**Connection Pool Sizing (Production Example):**
+- Web service: `DB_POOL=60` (must be >= PUMA_WORKERS × PUMA_MAX_THREADS + headroom)
+- Sidekiq default: `DB_POOL=15`
+- Sidekiq ingress: `DB_POOL=30`
+- Sidekiq push-pull workers: `DB_POOL=80` each
+- Postgres `max_connections=225` (must be >= total of all pools)
+
+See [Performance Tuning](Performance.md#connection-pooling) for detailed recommendations.
 ### Redis Configuration
 
 | Variable | Description | Default |
@@ -92,9 +101,15 @@ See [Performance Tuning](Performance.md) for recommendations by instance size.
 
 | Volume | Purpose | Container Path |
 |--------|---------|-----------------|
-| `postgres-data` | PostgreSQL database | `/var/lib/postgresql/data` |
+| `/var/lib/postgresql/data` (bind mount) | PostgreSQL database | `/var/lib/postgresql/data` |
 | `redis-data` | Redis database | `/data` |
 | `mastodon-public` | Precompiled assets | `/opt/mastodon/public` |
+
+**Note:** Postgres uses a bind mount to the host filesystem at `/var/lib/postgresql/data` rather than a Docker-managed volume. This provides:
+- Better I/O performance on local SSD
+- Easier backup and migration
+- Direct access for troubleshooting
+- Simpler disk space management
 
 ## Nginx Configuration
 
