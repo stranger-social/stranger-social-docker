@@ -33,6 +33,20 @@ docker compose up -d
 docker compose ps
 ```
 
+## 📊 Admin Monitoring (Steampipe Toolkit)
+
+**[Steampipe Admin Toolkit](steampipe_admin_toolkit/)** provides safe-by-design monitoring for Mastodon admins:
+
+- 🔍 30+ queries across 5 categories (adoption, federation, safety, database, infrastructure)
+- 📈 Pre-built dashboards for overview, federation health, and safety signals
+- 🔒 Privacy-first: no PII, user content, or behavioral tracking
+- ⚙️ Fully configurable with environment variables
+- 📖 Complete security policy and safe-query guidelines
+
+**Quick start:** `cd steampipe_admin_toolkit && docker compose up -d` → open http://localhost:8080
+
+See [Toolkit README](steampipe_admin_toolkit/README.md) and [Security Policy](steampipe_admin_toolkit/SECURITY.md).
+
 ## 📚 Documentation
 
 Complete documentation lives in `docs/` (auto-synced to [GitHub Wiki](../../wiki)):
@@ -120,11 +134,6 @@ docker compose down
 ```
 
 ## Security
-
-- 🔒 Never commit `.env` files (protected by `.gitignore`)
-- 🔒 Use strong, unique passwords; rotate secrets periodically
-- 🔒 Keep SSL certificates current and Docker images up-to-date
-- 🔒 Enable `AUTHORIZED_FETCH` to reduce unauthorized scraping
 - 🔒 See [Security Guide](docs/Security.md) for detailed best practices
 
 ## GitHub Wiki Sync
