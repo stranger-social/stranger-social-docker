@@ -1,0 +1,59 @@
+# Steampipe Admin Toolkit .gitignore
+
+# Environment configuration with secrets
+.env
+!.env.example
+
+# Steampipe cache and state
+.steampipe/
+.steampipe_internal/
+workspace/.steampipe/
+
+# Steampipe plugins (downloaded)
+workspace/plugins/
+
+# Local plugin cache
+**/plugins/
+**/cache/
+
+# Steampipe dashboard cache
+**/dashboard_cache/
+
+# Python and package management
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Docker volumes (local development only)
+steampipe_plugins/
+steampipe_db/
+steampipe_cache/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.bak
+
+# Terraform (if using IaC)
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
